@@ -1,0 +1,28 @@
+openapi: 3.0.1
+info:
+  title: informes API
+  description: ''
+  version: '1.0'
+servers:
+  - url: 'https://hospital-apim.azure-api.net/informes'
+paths:
+  /informes:
+    get:
+      summary: GET Informes
+      operationId: get-informes
+      responses:
+        '200':
+          description: null
+components:
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: Ocp-Apim-Subscription-Key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: subscription-key
+      in: query
+security:
+  - apiKeyHeader: []
+  - apiKeyQuery: []
