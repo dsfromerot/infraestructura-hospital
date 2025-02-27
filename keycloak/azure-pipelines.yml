@@ -1,7 +1,7 @@
 trigger: none
 
 pool:
-  name: hospital-pool  # Usa el agente self-hosted en la VM
+  name: servicios  # Usa el agente self-hosted en la VM
 
 stages:
   - stage: Deploy_Keycloak
