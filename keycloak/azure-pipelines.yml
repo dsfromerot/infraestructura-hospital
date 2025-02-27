@@ -1,0 +1,17 @@
+trigger: none
+
+pool:
+  name: hospital-pool  # Usa el agente self-hosted en la VM
+
+stages:
+  - stage: Deploy_Keycloak
+    jobs:
+      - job: Deploy
+        steps:
+          - task: SSH@0
+            displayName: "Desplegar Keycloak"
+            inputs:
+              sshEndpoint: "vm-keycloak"
+              run: |
+                cd /home/azureuser/keycloak
+                nohup ./bin/kc.sh start-dev --http-enabled=true --hostname=172.174.233.69 --http-port=8080 > keycloak.log 2>&1 &
