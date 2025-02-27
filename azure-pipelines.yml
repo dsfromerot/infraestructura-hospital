@@ -3,7 +3,43 @@ trigger: none  # Se ejecuta manualmente o programado
 stages:
   - stage: Deploy_Microservices
     jobs:
+      - job: Update_Env_Files
+        steps:
+          - checkout: none  # No requiere código
+          - task: SSH@0
+            displayName: "Actualizar archivos .env en la VM"
+            inputs:
+              sshEndpoint: "vm-hospital"
+              run: |
+                echo "OIDC_ISSUER=$(OIDC_ISSUER)" > /home/azureuser/pacientes/.env
+                echo "OIDC_AUTH_URI=$(OIDC_AUTH_URI)" >> /home/azureuser/pacientes/.env
+                echo "OIDC_CLIENT_ID=$(OIDC_CLIENT_ID_PACIENTES)" >> /home/azureuser/pacientes/.env
+                echo "OIDC_CLIENT_SECRET=$(OIDC_CLIENT_SECRET_PACIENTES)" >> /home/azureuser/pacientes/.env
+                echo "OIDC_REDIRECT_URIS=$(OIDC_REDIRECT_URIS_PACIENTES)" >> /home/azureuser/pacientes/.env
+                echo "OIDC_USERINFO_URI=$(OIDC_USERINFO_URI)" >> /home/azureuser/pacientes/.env
+                echo "OIDC_TOKEN_URI=$(OIDC_TOKEN_URI)" >> /home/azureuser/pacientes/.env
+                echo "OIDC_INTROSPECTION_URI=$(OIDC_INTROSPECTION_URI)" >> /home/azureuser/pacientes/.env
+
+                echo "OIDC_ISSUER=$(OIDC_ISSUER)" > /home/azureuser/pruebas/.env
+                echo "OIDC_AUTH_URI=$(OIDC_AUTH_URI)" >> /home/azureuser/pruebas/.env
+                echo "OIDC_CLIENT_ID=$(OIDC_CLIENT_ID_PRUEBAS)" >> /home/azureuser/pruebas/.env
+                echo "OIDC_CLIENT_SECRET=$(OIDC_CLIENT_SECRET_PRUEBAS)" >> /home/azureuser/pruebas/.env
+                echo "OIDC_REDIRECT_URIS=$(OIDC_REDIRECT_URIS_PRUEBAS)" >> /home/azureuser/pruebas/.env
+                echo "OIDC_USERINFO_URI=$(OIDC_USERINFO_URI)" >> /home/azureuser/pruebas/.env
+                echo "OIDC_TOKEN_URI=$(OIDC_TOKEN_URI)" >> /home/azureuser/pruebas/.env
+                echo "OIDC_INTROSPECTION_URI=$(OIDC_INTROSPECTION_URI)" >> /home/azureuser/pruebas/.env
+
+                echo "OIDC_ISSUER=$(OIDC_ISSUER)" > /home/azureuser/informes/.env
+                echo "OIDC_AUTH_URI=$(OIDC_AUTH_URI)" >> /home/azureuser/informes/.env
+                echo "OIDC_CLIENT_ID=$(OIDC_CLIENT_ID_INFORMES)" >> /home/azureuser/informes/.env
+                echo "OIDC_CLIENT_SECRET=$(OIDC_CLIENT_SECRET_INFORMES)" >> /home/azureuser/informes/.env
+                echo "OIDC_REDIRECT_URIS=$(OIDC_REDIRECT_URIS_INFORMES)" >> /home/azureuser/informes/.env
+                echo "OIDC_USERINFO_URI=$(OIDC_USERINFO_URI)" >> /home/azureuser/informes/.env
+                echo "OIDC_TOKEN_URI=$(OIDC_TOKEN_URI)" >> /home/azureuser/informes/.env
+                echo "OIDC_INTROSPECTION_URI=$(OIDC_INTROSPECTION_URI)" >> /home/azureuser/informes/.env
+
       - job: Trigger_Microservices
+        dependsOn: Update_Env_Files  # Asegura que primero se actualicen los .env antes de ejecutar los microservicios
         steps:
           - checkout: none
           - task: AzurePipelinesRunPipeline@1
@@ -18,7 +54,7 @@ stages:
       - job: Deploy_Keycloak
         steps:
           - checkout: self  # Necesario si usa plantillas dentro del mismo repo
-          - template: keycloak/azure-pipelines.yml  # Ahora este archivo es solo 'steps'
+          - template: keycloak/azure-pipelines.yml  # Este archivo solo debe contener 'steps'
 
   - stage: Deploy_APIM
     dependsOn: Deploy_Keycloak
@@ -26,4 +62,4 @@ stages:
       - job: Deploy_APIM
         steps:
           - checkout: self  # Permite acceder a la plantilla dentro del repo
-          - template: apim/azure-pipelines.yml  # Ahora este archivo es solo 'steps'
+          - template: apim/azure-pipelines.yml  # Este archivo solo debe contener 'steps'
