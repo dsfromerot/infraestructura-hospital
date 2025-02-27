@@ -1,9 +1,13 @@
 steps:
-  - task: AzureResourceManagerTemplateDeployment@3
-    displayName: "Deploy APIM"
+  - checkout: self
+
+  - task: AzureCLI@2
+    displayName: "Subir Plantillas de API a APIM"
     inputs:
       azureSubscription: "AzureServiceConnection"
-      resourceGroupName: "api-manager-rg"
-      location: "East US"
-      templateLocation: "Linked artifact"
-      csmFile: "apim/apim-template.json"
+      scriptType: "bash"
+      scriptLocation: "inlineScript"
+      inlineScript: |
+        az apim api import --service-name hospital-apim --resource-group hospital-rg --path pacientes --api-id get-pacientes --specification-format OpenApi --specification-path apim/get-pacientes.yaml
+        az apim api import --service-name hospital-apim --resource-group hospital-rg --path permisos --api-id get-permisos --specification-format OpenApi --specification-path apim/get-permisos.yaml
+        az apim api import --service-name hospital-apim --resource-group hospital-rg --path pruebas --api-id get-pruebas --specification-format OpenApi --specification-path apim/get-pruebas.yaml
