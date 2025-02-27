@@ -1,39 +1,29 @@
 trigger: none  # Se ejecuta manualmente o programado
 
-pool:
-  name: servicios  # Agente self-hosted en la VM
-
 stages:
   - stage: Deploy_Microservices
     jobs:
-      - job: TriggerMicroservices
+      - job: Trigger_Microservices
         steps:
+          - checkout: none
           - task: AzurePipelinesRunPipeline@1
-            displayName: "Ejecutar Pipeline de Pacientes"
+            displayName: "Ejecutar Pipeline de Microservicios"
             inputs:
-              definition: "pacientes-pipeline"
-              parameters: "{}"
-          - task: AzurePipelinesRunPipeline@1
-            displayName: "Ejecutar Pipeline de Pruebas"
-            inputs:
-              definition: "pruebas-pipeline"
-              parameters: "{}"
-          - task: AzurePipelinesRunPipeline@1
-            displayName: "Ejecutar Pipeline de Informes"
-            inputs:
-              definition: "informes-pipeline"
+              definition: "deploy-microservices"
               parameters: "{}"
 
   - stage: Deploy_Keycloak
     dependsOn: Deploy_Microservices
     jobs:
-      - job: DeployKeycloak
+      - job: Trigger_Keycloak
         steps:
-          - template: keycloak/azure-pipelines.yml  # Llama al pipeline de Keycloak
+          - checkout: none
+          - template: keycloak/azure-pipelines.yml
 
   - stage: Deploy_APIM
     dependsOn: Deploy_Keycloak
     jobs:
-      - job: DeployAPIM
+      - job: Trigger_APIM
         steps:
-          - template: apim/azure-pipelines.yml  # Llama al pipeline de APIM
+          - checkout: none
+          - template: apim/azure-pipelines.yml
