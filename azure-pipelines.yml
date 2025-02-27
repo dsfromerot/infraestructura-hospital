@@ -14,9 +14,8 @@ stages:
               sshEndpoint: "servicios"
               runOptions: inline
               inline: |
-                set -x  # Habilitar modo debug
+                set -x  # Habilitar debug
                 for DIR in pacientes pruebas informes; do
-                  # Construir nombres de variables
                   CLIENT_ID_VAR="OIDC_CLIENT_ID_${DIR^^}"
                   CLIENT_SECRET_VAR="OIDC_CLIENT_SECRET_${DIR^^}"
                   REDIRECT_URIS_VAR="OIDC_REDIRECT_URIS_${DIR^^}"
@@ -27,8 +26,11 @@ stages:
                   REDIRECT_URIS=$(eval echo "\$${REDIRECT_URIS_VAR}")
                   
                   # Validar variables críticas
-                  if [ -z "$CLIENT_ID" ] || [ -z "$CLIENT_SECRET" ]; then
-                    echo "Error: Variables de cliente no definidas para $DIR"
+                  if [ -z "$CLIENT_ID" ] || [ -z "$CLIENT_SECRET" ] || [ -z "$REDIRECT_URIS" ]; then
+                    echo "Error: Variables incompletas para $DIR"
+                    echo "CLIENT_ID: $CLIENT_ID"
+                    echo "CLIENT_SECRET: $CLIENT_SECRET"
+                    echo "REDIRECT_URIS: $REDIRECT_URIS"
                     exit 1
                   fi
 
@@ -52,15 +54,17 @@ stages:
               OIDC_TOKEN_URI: $(OIDC_TOKEN_URI)
               OIDC_INTROSPECTION_URI: $(OIDC_INTROSPECTION_URI)
               
-              # Variables específicas por servicio
+              # Variables específicas de Pacientes
               OIDC_CLIENT_ID_PACIENTES: $(OIDC_CLIENT_ID_PACIENTES)
               OIDC_CLIENT_SECRET_PACIENTES: $(OIDC_CLIENT_SECRET_PACIENTES)
               OIDC_REDIRECT_URIS_PACIENTES: $(OIDC_REDIRECT_URIS_PACIENTES)
               
+              # Variables específicas de Pruebas
               OIDC_CLIENT_ID_PRUEBAS: $(OIDC_CLIENT_ID_PRUEBAS)
               OIDC_CLIENT_SECRET_PRUEBAS: $(OIDC_CLIENT_SECRET_PRUEBAS)
               OIDC_REDIRECT_URIS_PRUEBAS: $(OIDC_REDIRECT_URIS_PRUEBAS)
               
+              # Variables específicas de Informes
               OIDC_CLIENT_ID_INFORMES: $(OIDC_CLIENT_ID_INFORMES)
               OIDC_CLIENT_SECRET_INFORMES: $(OIDC_CLIENT_SECRET_INFORMES)
               OIDC_REDIRECT_URIS_INFORMES: $(OIDC_REDIRECT_URIS_INFORMES)
