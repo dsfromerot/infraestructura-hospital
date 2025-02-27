@@ -39,14 +39,29 @@ stages:
                 echo "OIDC_INTROSPECTION_URI=$(OIDC_INTROSPECTION_URI)" >> /home/azureuser/informes/.env
 
       - job: Trigger_Microservices
-        dependsOn: Update_Env_Files  # Asegura que primero se actualicen los .env antes de ejecutar los microservicios
+        pool:
+          vmImage: ubuntu-latest  # Usamos un agente compatible con cURL
         steps:
           - checkout: none
-          - task: AzurePipelinesRunPipeline@1
-            displayName: "Ejecutar Pipeline de Microservicios"
-            inputs:
-              definition: "deploy-microservices"
-              parameters: "{}"
+          - script: |
+              echo "Ejecutando Pipeline de Pacientes..."
+              curl -X POST -u $(AZURE_DEVOPS_USERNAME):$(AZURE_DEVOPS_PAT) \
+                -H "Content-Type: application/json" \
+                -d '{"definitionId": 1, "sourceBranch": "refs/heads/main"}' \
+                "https://dev.azure.com/$(AZURE_DEVOPS_ORG)/$(AZURE_DEVOPS_PROJECT)/_apis/build/builds?api-version=6.0"
+
+              echo "Ejecutando Pipeline de Pruebas..."
+              curl -X POST -u $(AZURE_DEVOPS_USERNAME):$(AZURE_DEVOPS_PAT) \
+                -H "Content-Type: application/json" \
+                -d '{"definitionId": 3, "sourceBranch": "refs/heads/main"}' \
+                "https://dev.azure.com/$(AZURE_DEVOPS_ORG)/$(AZURE_DEVOPS_PROJECT)/_apis/build/builds?api-version=6.0"
+
+              echo "Ejecutando Pipeline de Informes..."
+              curl -X POST -u $(AZURE_DEVOPS_USERNAME):$(AZURE_DEVOPS_PAT) \
+                -H "Content-Type: application/json" \
+                -d '{"definitionId": 2, "sourceBranch": "refs/heads/main"}' \
+                "https://dev.azure.com/$(AZURE_DEVOPS_ORG)/$(AZURE_DEVOPS_PROJECT)/_apis/build/builds?api-version=6.0"
+            displayName: "Ejecutar Pipelines de Microservicios"
 
   - stage: Deploy_Keycloak
     dependsOn: Deploy_Microservices
