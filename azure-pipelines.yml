@@ -17,7 +17,7 @@ stages:
     jobs:
       - job: Deploy_Keycloak
         steps:
-          - checkout: self  # Se necesita si usa plantillas dentro del mismo repo
+          - checkout: self  # Necesario si usa plantillas dentro del mismo repo
           - template: keycloak/azure-pipelines.yml  # Ahora este archivo es solo 'steps'
 
   - stage: Deploy_APIM
@@ -25,5 +25,5 @@ stages:
     jobs:
       - job: Deploy_APIM
         steps:
-          - checkout: self
-          - template: apim/azure-pipelines.yml
+          - checkout: self  # Permite acceder a la plantilla dentro del repo
+          - template: apim/azure-pipelines.yml  # Ahora este archivo es solo 'steps'
