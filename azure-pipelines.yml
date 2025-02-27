@@ -1,44 +1,69 @@
-trigger: none  # Se ejecuta manualmente o programado
+trigger: none
 
 stages:
   - stage: Deploy_Microservices
     jobs:
       - job: Update_Env_Files
         pool:
-         name: servicios
+          name: servicios
         steps:
-          - checkout: none  # No requiere código
+          - checkout: none
           - task: SSH@0
             displayName: "Actualizar archivos .env en la VM"
             inputs:
               sshEndpoint: "servicios"
-              run: |
-                echo "OIDC_ISSUER=$(OIDC_ISSUER)" > /home/azureuser/pacientes/.env
-                echo "OIDC_AUTH_URI=$(OIDC_AUTH_URI)" >> /home/azureuser/pacientes/.env
-                echo "OIDC_CLIENT_ID=$(OIDC_CLIENT_ID_PACIENTES)" >> /home/azureuser/pacientes/.env
-                echo "OIDC_CLIENT_SECRET=$(OIDC_CLIENT_SECRET_PACIENTES)" >> /home/azureuser/pacientes/.env
-                echo "OIDC_REDIRECT_URIS=$(OIDC_REDIRECT_URIS_PACIENTES)" >> /home/azureuser/pacientes/.env
-                echo "OIDC_USERINFO_URI=$(OIDC_USERINFO_URI)" >> /home/azureuser/pacientes/.env
-                echo "OIDC_TOKEN_URI=$(OIDC_TOKEN_URI)" >> /home/azureuser/pacientes/.env
-                echo "OIDC_INTROSPECTION_URI=$(OIDC_INTROSPECTION_URI)" >> /home/azureuser/pacientes/.env
+              runOptions: inline
+              inline: |
+                set -x  # Habilitar modo debug
+                for DIR in pacientes pruebas informes; do
+                  # Construir nombres de variables
+                  CLIENT_ID_VAR="OIDC_CLIENT_ID_${DIR^^}"
+                  CLIENT_SECRET_VAR="OIDC_CLIENT_SECRET_${DIR^^}"
+                  REDIRECT_URIS_VAR="OIDC_REDIRECT_URIS_${DIR^^}"
+                  
+                  # Obtener valores usando expansión indirecta
+                  CLIENT_ID=$(eval echo "\$${CLIENT_ID_VAR}")
+                  CLIENT_SECRET=$(eval echo "\$${CLIENT_SECRET_VAR}")
+                  REDIRECT_URIS=$(eval echo "\$${REDIRECT_URIS_VAR}")
+                  
+                  # Validar variables críticas
+                  if [ -z "$CLIENT_ID" ] || [ -z "$CLIENT_SECRET" ]; then
+                    echo "Error: Variables de cliente no definidas para $DIR"
+                    exit 1
+                  fi
 
-                echo "OIDC_ISSUER=$(OIDC_ISSUER)" > /home/azureuser/pruebas/.env
-                echo "OIDC_AUTH_URI=$(OIDC_AUTH_URI)" >> /home/azureuser/pruebas/.env
-                echo "OIDC_CLIENT_ID=$(OIDC_CLIENT_ID_PRUEBAS)" >> /home/azureuser/pruebas/.env
-                echo "OIDC_CLIENT_SECRET=$(OIDC_CLIENT_SECRET_PRUEBAS)" >> /home/azureuser/pruebas/.env
-                echo "OIDC_REDIRECT_URIS=$(OIDC_REDIRECT_URIS_PRUEBAS)" >> /home/azureuser/pruebas/.env
-                echo "OIDC_USERINFO_URI=$(OIDC_USERINFO_URI)" >> /home/azureuser/pruebas/.env
-                echo "OIDC_TOKEN_URI=$(OIDC_TOKEN_URI)" >> /home/azureuser/pruebas/.env
-                echo "OIDC_INTROSPECTION_URI=$(OIDC_INTROSPECTION_URI)" >> /home/azureuser/pruebas/.env
-
-                echo "OIDC_ISSUER=$(OIDC_ISSUER)" > /home/azureuser/informes/.env
-                echo "OIDC_AUTH_URI=$(OIDC_AUTH_URI)" >> /home/azureuser/informes/.env
-                echo "OIDC_CLIENT_ID=$(OIDC_CLIENT_ID_INFORMES)" >> /home/azureuser/informes/.env
-                echo "OIDC_CLIENT_SECRET=$(OIDC_CLIENT_SECRET_INFORMES)" >> /home/azureuser/informes/.env
-                echo "OIDC_REDIRECT_URIS=$(OIDC_REDIRECT_URIS_INFORMES)" >> /home/azureuser/informes/.env
-                echo "OIDC_USERINFO_URI=$(OIDC_USERINFO_URI)" >> /home/azureuser/informes/.env
-                echo "OIDC_TOKEN_URI=$(OIDC_TOKEN_URI)" >> /home/azureuser/informes/.env
-                echo "OIDC_INTROSPECTION_URI=$(OIDC_INTROSPECTION_URI)" >> /home/azureuser/informes/.env
+                  # Crear archivo .env
+                  cat <<EOF > "/home/azureuser/$DIR/.env"
+                OIDC_ISSUER=${OIDC_ISSUER}
+                OIDC_AUTH_URI=${OIDC_AUTH_URI}
+                OIDC_CLIENT_ID=${CLIENT_ID}
+                OIDC_CLIENT_SECRET=${CLIENT_SECRET}
+                OIDC_REDIRECT_URIS=${REDIRECT_URIS}
+                OIDC_USERINFO_URI=${OIDC_USERINFO_URI}
+                OIDC_TOKEN_URI=${OIDC_TOKEN_URI}
+                OIDC_INTROSPECTION_URI=${OIDC_INTROSPECTION_URI}
+                EOF
+                done
+            env:
+              # Variables base
+              OIDC_ISSUER: $(OIDC_ISSUER)
+              OIDC_AUTH_URI: $(OIDC_AUTH_URI)
+              OIDC_USERINFO_URI: $(OIDC_USERINFO_URI)
+              OIDC_TOKEN_URI: $(OIDC_TOKEN_URI)
+              OIDC_INTROSPECTION_URI: $(OIDC_INTROSPECTION_URI)
+              
+              # Variables específicas por servicio
+              OIDC_CLIENT_ID_PACIENTES: $(OIDC_CLIENT_ID_PACIENTES)
+              OIDC_CLIENT_SECRET_PACIENTES: $(OIDC_CLIENT_SECRET_PACIENTES)
+              OIDC_REDIRECT_URIS_PACIENTES: $(OIDC_REDIRECT_URIS_PACIENTES)
+              
+              OIDC_CLIENT_ID_PRUEBAS: $(OIDC_CLIENT_ID_PRUEBAS)
+              OIDC_CLIENT_SECRET_PRUEBAS: $(OIDC_CLIENT_SECRET_PRUEBAS)
+              OIDC_REDIRECT_URIS_PRUEBAS: $(OIDC_REDIRECT_URIS_PRUEBAS)
+              
+              OIDC_CLIENT_ID_INFORMES: $(OIDC_CLIENT_ID_INFORMES)
+              OIDC_CLIENT_SECRET_INFORMES: $(OIDC_CLIENT_SECRET_INFORMES)
+              OIDC_REDIRECT_URIS_INFORMES: $(OIDC_REDIRECT_URIS_INFORMES)
 
       - job: Trigger_Microservices
         pool:
@@ -51,32 +76,36 @@ stages:
                 -H "Content-Type: application/json" \
                 -d '{"definitionId": 1, "sourceBranch": "refs/heads/main"}' \
                 "https://dev.azure.com/$(AZURE_DEVOPS_ORG)/$(AZURE_DEVOPS_PROJECT)/_apis/build/builds?api-version=6.0"
-
+              
               echo "Ejecutando Pipeline de Pruebas..."
               curl -X POST -u $(AZURE_DEVOPS_USERNAME):$(AZURE_DEVOPS_PAT) \
                 -H "Content-Type: application/json" \
                 -d '{"definitionId": 3, "sourceBranch": "refs/heads/main"}' \
                 "https://dev.azure.com/$(AZURE_DEVOPS_ORG)/$(AZURE_DEVOPS_PROJECT)/_apis/build/builds?api-version=6.0"
-
+              
               echo "Ejecutando Pipeline de Informes..."
               curl -X POST -u $(AZURE_DEVOPS_USERNAME):$(AZURE_DEVOPS_PAT) \
                 -H "Content-Type: application/json" \
                 -d '{"definitionId": 2, "sourceBranch": "refs/heads/main"}' \
                 "https://dev.azure.com/$(AZURE_DEVOPS_ORG)/$(AZURE_DEVOPS_PROJECT)/_apis/build/builds?api-version=6.0"
-            displayName: "Ejecutar Pipelines de Microservicios"
+            env:
+              AZURE_DEVOPS_USERNAME: $(AZURE_DEVOPS_USERNAME)
+              AZURE_DEVOPS_PAT: $(AZURE_DEVOPS_PAT)
+              AZURE_DEVOPS_ORG: $(AZURE_DEVOPS_ORG)
+              AZURE_DEVOPS_PROJECT: $(AZURE_DEVOPS_PROJECT)
 
   - stage: Deploy_Keycloak
     dependsOn: Deploy_Microservices
     jobs:
       - job: Deploy_Keycloak
         steps:
-          - checkout: self  # Necesario si usa plantillas dentro del mismo repo
-          - template: keycloak/azure-pipelines.yml  # Este archivo solo debe contener 'steps'
+          - checkout: self
+          - template: keycloak/azure-pipelines.yml
 
   - stage: Deploy_APIM
     dependsOn: Deploy_Keycloak
     jobs:
       - job: Deploy_APIM
         steps:
-          - checkout: self  # Permite acceder a la plantilla dentro del repo
-          - template: apim/azure-pipelines.yml  # Este archivo solo debe contener 'steps'
+          - checkout: self
+          - template: apim/azure-pipelines.yml
