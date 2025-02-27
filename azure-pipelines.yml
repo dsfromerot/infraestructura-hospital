@@ -9,7 +9,7 @@ stages:
           - task: SSH@0
             displayName: "Actualizar archivos .env en la VM"
             inputs:
-              sshEndpoint: "vm-hospital"
+              sshEndpoint: "servicios"
               run: |
                 echo "OIDC_ISSUER=$(OIDC_ISSUER)" > /home/azureuser/pacientes/.env
                 echo "OIDC_AUTH_URI=$(OIDC_AUTH_URI)" >> /home/azureuser/pacientes/.env
