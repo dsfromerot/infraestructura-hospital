@@ -1,0 +1,18 @@
+trigger: none
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: Deploy_APIM
+    jobs:
+      - job: Deploy
+        steps:
+          - task: AzureResourceManagerTemplateDeployment@3
+            displayName: "Deploy APIM"
+            inputs:
+              azureSubscription: "AzureServiceConnection"
+              resourceGroupName: "hospital-rg"
+              location: "East US"
+              templateLocation: "Linked artifact"
+              csmFile: "apim/apim-template.json"
