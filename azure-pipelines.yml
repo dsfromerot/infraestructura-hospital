@@ -4,6 +4,8 @@ stages:
   - stage: Deploy_Microservices
     jobs:
       - job: Update_Env_Files
+        pool:
+         name: servicios
         steps:
           - checkout: none  # No requiere código
           - task: SSH@0
