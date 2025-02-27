@@ -15,15 +15,15 @@ stages:
   - stage: Deploy_Keycloak
     dependsOn: Deploy_Microservices
     jobs:
-      - job: Trigger_Keycloak
+      - job: Deploy_Keycloak
         steps:
-          - checkout: none
-          - template: keycloak/azure-pipelines.yml
+          - checkout: self  # Se necesita si usa plantillas dentro del mismo repo
+          - template: keycloak/azure-pipelines.yml  # Ahora este archivo es solo 'steps'
 
   - stage: Deploy_APIM
     dependsOn: Deploy_Keycloak
     jobs:
-      - job: Trigger_APIM
+      - job: Deploy_APIM
         steps:
-          - checkout: none
+          - checkout: self
           - template: apim/azure-pipelines.yml
