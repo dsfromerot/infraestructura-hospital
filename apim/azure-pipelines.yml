@@ -9,5 +9,5 @@ steps:
       scriptLocation: "inlineScript"
       inlineScript: |
         az apim api import --service-name hospital-apim --resource-group hospital-rg --path pacientes --api-id get-pacientes --specification-format OpenApi --specification-path apim/get-pacientes.yaml
-        az apim api import --service-name hospital-apim --resource-group hospital-rg --path permisos --api-id get-permisos --specification-format OpenApi --specification-path apim/get-permisos.yaml
+        az apim api import --service-name hospital-apim --resource-group hospital-rg --path permisos --api-id get-permisos --specification-format OpenApi --specification-path apim/get-informes.yaml
         az apim api import --service-name hospital-apim --resource-group hospital-rg --path pruebas --api-id get-pruebas --specification-format OpenApi --specification-path apim/get-pruebas.yaml
