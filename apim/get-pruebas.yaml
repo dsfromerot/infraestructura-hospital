@@ -1,0 +1,28 @@
+openapi: 3.0.1
+info:
+  title: Pruebas API
+  description: ''
+  version: '1.0'
+servers:
+  - url: 'https://hospital-apim.azure-api.net/pruebas'
+paths:
+  /pruebas:
+    get:
+      summary: GET Pruebas
+      operationId: get-pruebas
+      responses:
+        '200':
+          description: null
+components:
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: Ocp-Apim-Subscription-Key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: subscription-key
+      in: query
+security:
+  - apiKeyHeader: []
+  - apiKeyQuery: []
