@@ -1,0 +1,29 @@
+openapi: 3.0.1
+info:
+  title: pacientes API
+  description: ''
+  version: '1.0'
+servers:
+  - url: 'http://hospital-apim.azure-api.net/pacientes'
+  - url: 'https://hospital-apim.azure-api.net/pacientes'
+paths:
+  /pacientes:
+    get:
+      summary: GET Pacientes
+      operationId: get-informes
+      responses:
+        '200':
+          description: null
+components:
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: Ocp-Apim-Subscription-Key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: subscription-key
+      in: query
+security:
+  - apiKeyHeader: []
+  - apiKeyQuery: []
