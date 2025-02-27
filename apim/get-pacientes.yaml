@@ -10,7 +10,7 @@ paths:
   /pacientes:
     get:
       summary: GET Pacientes
-      operationId: get-informes
+      operationId: get-pacientes
       responses:
         '200':
           description: null
