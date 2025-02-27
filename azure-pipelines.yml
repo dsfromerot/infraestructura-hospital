@@ -40,7 +40,7 @@ stages:
 
       - job: Trigger_Microservices
         pool:
-          vmImage: ubuntu-latest  # Usamos un agente compatible con cURL
+          name: servicios
         steps:
           - checkout: none
           - script: |
